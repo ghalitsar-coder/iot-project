@@ -279,6 +279,19 @@ export const uvApi = {
   },
 
   /**
+   * Stop running manual UV
+   */
+  stopManualUV: (): Promise<{
+    message: string;
+    action_id: number;
+    stopped_at: string;
+  }> => {
+    return apiFetch('/uv/manual/stop', {
+      method: 'POST',
+    });
+  },
+
+  /**
    * Get UV status
    */
   getStatus: (): Promise<UVStatus> => {
@@ -298,6 +311,8 @@ export const historyApi = {
     device_type?: 'FEEDER' | 'UV';
     trigger_source?: 'SCHEDULE' | 'MANUAL';
     status?: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN';
+    date_from?: Date;
+    date_to?: Date;
     limit?: number;
   }): Promise<ActionHistory[]> => {
     const queryParams = new URLSearchParams();
@@ -310,6 +325,12 @@ export const historyApi = {
     }
     if (params?.status) {
       queryParams.append('status', params.status);
+    }
+    if (params?.date_from) {
+      queryParams.append('date_from', params.date_from.toISOString());
+    }
+    if (params?.date_to) {
+      queryParams.append('date_to', params.date_to.toISOString());
     }
     if (params?.limit) {
       queryParams.append('limit', params.limit.toString());

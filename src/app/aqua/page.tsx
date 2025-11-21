@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { StockCard } from "@/components/dashboard/StockCard";
 import { UVStatusCard } from "@/components/dashboard/UVStatusCard";
 import { ActivityHistory } from "@/components/dashboard/ActivityHistory";
+import { type ActivityFilters } from "@/components/dashboard/ActivityHistoryFilter";
 import { FeedControl } from "@/components/controls/FeedControl";
 import { UVControl } from "@/components/controls/UVControl";
 import { ScheduleManager } from "@/components/schedule/ScheduleManager";
@@ -14,21 +15,27 @@ import {
   useDashboard,
   useManualFeed,
   useManualUV,
+  useStopManualUV,
   useUVStatus,
+  useHistory,
 } from "@/hooks/use-api";
 
 const Index = () => {
   const [isUVActive, setIsUVActive] = useState(false);
   const [uvRemainingMinutes, setUvRemainingMinutes] = useState<number>();
+  const [historyFilters, setHistoryFilters] = useState<ActivityFilters>({
+    limit: 50,
+  });
 
   // TanStack Query hooks
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
   const { data: uvStatus } = useUVStatus();
+  const { data: historyData = [], isLoading: historyLoading } = useHistory(historyFilters);
   const manualFeed = useManualFeed();
   const manualUV = useManualUV();
+  const stopManualUV = useStopManualUV();
 
   const stockGram = dashboard?.stock.amount_gram ?? 0;
-  const activities = dashboard?.history ?? [];
   const loading = dashboardLoading;
 
   // Update UV state when status changes
@@ -42,7 +49,14 @@ const Index = () => {
   }, [uvStatus]);
 
   const handleFeed = () => {
-    manualFeed.mutate();
+    manualFeed.mutate(undefined, {
+      onSuccess: () => {
+        // Dashboard will auto-refetch due to invalidateQueries in useManualFeed
+        toast.success("Pemberian Pakan Berhasil", {
+          description: "Stok akan diperbarui sebentar lagi",
+        });
+      },
+    });
   };
 
   const handleUVActivate = (durationMinutes: number) => {
@@ -55,19 +69,15 @@ const Index = () => {
   };
 
   const handleUVDeactivate = () => {
-    // Note: API tidak menyediakan endpoint deactivate.
-    // Manual UV akan otomatis expire setelah durasi habis.
-    // Kita hanya perlu reset local state.
-
-    setIsUVActive(false);
-    setUvRemainingMinutes(undefined);
-
-    toast.info("Monitoring UV Dihentikan", {
-      description: "UV akan otomatis mati setelah durasi selesai",
+    stopManualUV.mutate(undefined, {
+      onSuccess: () => {
+        setIsUVActive(false);
+        setUvRemainingMinutes(undefined);
+      },
     });
   };
 
-  const lastFeedActivity = activities.find(
+  const lastFeedActivity = historyData.find(
     (a) => a.device_type === "FEEDER" && a.status === "SUCCESS"
   );
 
@@ -117,7 +127,7 @@ const Index = () => {
       <main className="container mx-auto px-4 pb-12 space-y-8">
         {/* Status Cards */}
         <div className="grid md:grid-cols-2 gap-6">
-          <StockCard stockGram={stockGram} maxCapacity={1000} />
+          <StockCard stockGram={stockGram} />
           <UVStatusCard
             isActive={isUVActive}
             remainingMinutes={uvRemainingMinutes}
@@ -130,7 +140,9 @@ const Index = () => {
         <div className="grid md:grid-cols-2 gap-6">
           <FeedControl
             lastFeedTime={lastFeedActivity?.start_time}
+            stockGram={stockGram}
             onConfirm={handleFeed}
+            isLoading={manualFeed.isPending}
           />
           <UVControl
             isActive={isUVActive}
@@ -143,7 +155,12 @@ const Index = () => {
         <ScheduleManager />
 
         {/* Activity History */}
-        <ActivityHistory activities={activities} />
+        <ActivityHistory
+          activities={historyData}
+          filters={historyFilters}
+          onFiltersChange={setHistoryFilters}
+          isLoading={historyLoading}
+        />
       </main>
     </div>
   );

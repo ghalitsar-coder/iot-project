@@ -95,9 +95,10 @@ export function useManualFeed() {
   return useMutation({
     mutationFn: () => feederApi.manualFeed(),
     onSuccess: () => {
-      // Invalidate related queries
+      // Invalidate related queries to trigger immediate refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.stock });
+      queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
       toast.success("Pemberian Pakan Berhasil", {
         description: "Pakan telah diberikan secara manual",
       });
@@ -184,15 +185,37 @@ export function useManualUV() {
   return useMutation({
     mutationFn: (durationMinutes: number) => uvApi.manualUV(durationMinutes),
     onSuccess: () => {
-      // Invalidate related queries
+      // Invalidate related queries to trigger immediate refetch
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.uvStatus });
+      queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
       toast.success("UV Sterilizer Diaktifkan", {
         description: "UV telah diaktifkan secara manual",
       });
     },
     onError: (error) => {
       toast.error("Gagal Mengaktifkan UV", {
+        description: error instanceof Error ? error.message : "Terjadi kesalahan",
+      });
+    },
+  });
+}
+
+export function useStopManualUV() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => uvApi.stopManualUV(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.uvStatus });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+      queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
+      toast.success("UV Manual Dihentikan", {
+        description: "Sinar UV telah dimatikan",
+      });
+    },
+    onError: (error) => {
+      toast.error("Gagal Menghentikan UV", {
         description: error instanceof Error ? error.message : "Terjadi kesalahan",
       });
     },
@@ -228,6 +251,8 @@ export function useHistory(filters?: {
   device_type?: "FEEDER" | "UV";
   trigger_source?: "SCHEDULE" | "MANUAL";
   status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
+  date_from?: Date;
+  date_to?: Date;
   limit?: number;
 }) {
   return useQuery({

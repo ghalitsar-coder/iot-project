@@ -4,12 +4,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { History, Fish, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ActionHistory } from "@/lib/api";
+import {
+  ActivityHistoryFilter,
+  type ActivityFilters,
+} from "./ActivityHistoryFilter";
 
 interface ActivityHistoryProps {
   activities: ActionHistory[];
+  filters: ActivityFilters;
+  onFiltersChange: (filters: ActivityFilters) => void;
+  isLoading?: boolean;
 }
 
-export const ActivityHistory = ({ activities }: ActivityHistoryProps) => {
+export const ActivityHistory = ({
+  activities,
+  filters,
+  onFiltersChange,
+  isLoading = false,
+}: ActivityHistoryProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "SUCCESS":
@@ -31,23 +43,46 @@ export const ActivityHistory = ({ activities }: ActivityHistoryProps) => {
     );
   };
 
+  // Calculate active filters count
+  const activeFiltersCount = [
+    filters.device_type,
+    filters.trigger_source,
+    filters.status,
+    filters.date_from,
+    filters.date_to,
+  ].filter(Boolean).length;
+
   return (
     <Card className="border-border/50 bg-card shadow-[var(--shadow-card)]">
       <div className="p-6 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-card-foreground">
-            Riwayat Aktivitas
-          </h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-card-foreground">
+                Riwayat Aktivitas
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Log aktivitas sistem real-time
+            </p>
+          </div>
+          <ActivityHistoryFilter
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+            activeFiltersCount={activeFiltersCount}
+          />
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Log aktivitas sistem real-time
-        </p>
       </div>
 
       <ScrollArea className="h-[400px]">
         <div className="p-6 space-y-3">
-          {activities.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <History className="h-12 w-12 mx-auto mb-3 opacity-30 animate-pulse" />
+              <p>Memuat aktivitas...</p>
+            </div>
+          ) : activities.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
               <p>Belum ada aktivitas tercatat</p>

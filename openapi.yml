@@ -382,6 +382,37 @@ paths:
         '400':
           description: Bad request (durasi tidak valid)
 
+  /uv/manual/stop:
+    post:
+      tags:
+        - UV
+      summary: Stop running manual UV
+      description: Menghentikan manual UV override sebelum durasi selesai.
+      operationId: stopManualUV
+      responses:
+        '200':
+          description: Manual UV berhasil dihentikan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Manual UV stopped"
+                  action_id:
+                    type: integer
+                    example: 15
+                  stopped_at:
+                    type: string
+                    format: date-time
+                    example: "2025-11-19T10:00:00Z"
+        '404':
+          description: Tidak ada manual UV yang sedang berjalan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /uv/status:
     get:
       tags:

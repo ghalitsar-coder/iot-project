@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +42,9 @@ import {
 } from "@/hooks/use-api";
 
 type DayName = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+
+// Predefined feed amount options
+const FEED_AMOUNT_OPTIONS = [5, 8, 10, 12, 15, 20, 25, 30];
 
 export const ScheduleManager = () => {
   const { data: feedSchedules = [], isLoading: feedLoading } =
@@ -65,17 +75,28 @@ export const ScheduleManager = () => {
 
   // Form states for creating new schedules
   const [newFeedTime, setNewFeedTime] = useState<string>("");
+  const [newFeedAmount, setNewFeedAmount] = useState<number>(10);
   const [newUVStartTime, setNewUVStartTime] = useState<string>("");
   const [newUVEndTime, setNewUVEndTime] = useState<string>("");
 
   // Edit mode states
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editFeedTime, setEditFeedTime] = useState<string>("");
+  const [editFeedAmount, setEditFeedAmount] = useState<number>(10);
   const [editUVStartTime, setEditUVStartTime] = useState<string>("");
   const [editUVEndTime, setEditUVEndTime] = useState<string>("");
 
   // Add mode in detail modal
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Load default feed amount from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("defaultFeedAmount");
+    if (saved) {
+      const amount = parseInt(saved);
+      setNewFeedAmount(amount);
+    }
+  }, []);
 
   const loading = feedLoading || uvLoading;
 
@@ -95,6 +116,14 @@ export const ScheduleManager = () => {
     setNewUVEndTime("");
     setEditingId(null);
     setShowAddForm(false);
+
+    // Reset to default amount from localStorage
+    const saved = localStorage.getItem("defaultFeedAmount");
+    if (saved) {
+      setNewFeedAmount(parseInt(saved));
+    } else {
+      setNewFeedAmount(10);
+    }
   };
 
   const closeModal = () => {
@@ -115,12 +144,14 @@ export const ScheduleManager = () => {
       {
         day_name: selectedDay,
         time: newFeedTime,
-        amount_gram: 10,
+        amount_gram: newFeedAmount,
         is_active: true,
       },
       {
         onSuccess: () => {
           setNewFeedTime("");
+          const saved = localStorage.getItem("defaultFeedAmount");
+          setNewFeedAmount(saved ? parseInt(saved) : 10);
           setShowAddForm(false);
           if (modalMode === "create") closeModal();
         },
@@ -151,6 +182,7 @@ export const ScheduleManager = () => {
   const handleEditFeedSchedule = (schedule: PakanSchedule) => {
     setEditingId(schedule.id);
     setEditFeedTime(schedule.time);
+    setEditFeedAmount(schedule.amount_gram);
   };
 
   const handleSaveEditFeedSchedule = (schedule: PakanSchedule) => {
@@ -161,7 +193,7 @@ export const ScheduleManager = () => {
         data: {
           day_name: schedule.day_name,
           time: editFeedTime,
-          amount_gram: schedule.amount_gram,
+          amount_gram: editFeedAmount,
           is_active: schedule.is_active,
         },
       },
@@ -169,6 +201,7 @@ export const ScheduleManager = () => {
         onSuccess: () => {
           setEditingId(null);
           setEditFeedTime("");
+          setEditFeedAmount(10);
         },
       }
     );
@@ -177,6 +210,7 @@ export const ScheduleManager = () => {
   const handleCancelEditFeed = () => {
     setEditingId(null);
     setEditFeedTime("");
+    setEditFeedAmount(10);
   };
 
   const handleEditUVSchedule = (schedule: UVSchedule) => {
@@ -396,6 +430,26 @@ export const ScheduleManager = () => {
                         className="text-lg"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feed-amount">Berat Pakan (gram)</Label>
+                      <Select
+                        value={newFeedAmount.toString()}
+                        onValueChange={(value) =>
+                          setNewFeedAmount(parseInt(value))
+                        }
+                      >
+                        <SelectTrigger id="feed-amount" className="text-lg">
+                          <SelectValue placeholder="Pilih berat pakan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FEED_AMOUNT_OPTIONS.map((amount) => (
+                            <SelectItem key={amount} value={amount.toString()}>
+                              {amount} gram
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="rounded-lg bg-muted p-3 text-sm">
                       <p className="font-medium mb-1">Detail:</p>
                       <ul className="text-muted-foreground space-y-1">
@@ -406,7 +460,7 @@ export const ScheduleManager = () => {
                           </strong>
                         </li>
                         <li>
-                          • Jumlah: <strong>10 gram</strong>
+                          • Jumlah: <strong>{newFeedAmount} gram</strong>
                         </li>
                         <li>
                           • Status: <strong>Aktif</strong>
@@ -510,6 +564,33 @@ export const ScheduleManager = () => {
                                 }
                                 className="text-lg"
                               />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edit-amount-${schedule.id}`}>
+                                Berat Pakan (gram)
+                              </Label>
+                              <Select
+                                value={editFeedAmount.toString()}
+                                onValueChange={(value) =>
+                                  setEditFeedAmount(parseInt(value))
+                                }
+                              >
+                                <SelectTrigger
+                                  id={`edit-amount-${schedule.id}`}
+                                >
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {FEED_AMOUNT_OPTIONS.map((amount) => (
+                                    <SelectItem
+                                      key={amount}
+                                      value={amount.toString()}
+                                    >
+                                      {amount} gram
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                             <div className="flex gap-2">
                               <Button
@@ -727,6 +808,31 @@ export const ScheduleManager = () => {
                             onChange={(e) => setNewFeedTime(e.target.value)}
                             className="text-lg"
                           />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="new-feed-amount">
+                            Berat Pakan (gram)
+                          </Label>
+                          <Select
+                            value={newFeedAmount.toString()}
+                            onValueChange={(value) =>
+                              setNewFeedAmount(parseInt(value))
+                            }
+                          >
+                            <SelectTrigger id="new-feed-amount">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {FEED_AMOUNT_OPTIONS.map((amount) => (
+                                <SelectItem
+                                  key={amount}
+                                  value={amount.toString()}
+                                >
+                                  {amount} gram
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <Button
                           onClick={handleCreateFeedSchedule}

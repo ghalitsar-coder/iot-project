@@ -20,7 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -28,9 +32,9 @@ import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 export interface ActivityFilters {
-  device_type?: 'FEEDER' | 'UV';
-  trigger_source?: 'SCHEDULE' | 'MANUAL';
-  status?: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN';
+  device_type?: "FEEDER" | "UV";
+  trigger_source?: "SCHEDULE" | "MANUAL";
+  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
   date_from?: Date;
   date_to?: Date;
   limit?: number;
@@ -61,10 +65,10 @@ export const ActivityHistoryFilter = ({
     onFiltersChange(resetFilters);
   };
 
-  const handleClearDate = (type: 'from' | 'to') => {
+  const handleClearDate = (type: "from" | "to") => {
     setLocalFilters((prev) => {
       const updated = { ...prev };
-      if (type === 'from') {
+      if (type === "from") {
         delete updated.date_from;
       } else {
         delete updated.date_to;
@@ -80,7 +84,10 @@ export const ActivityHistoryFilter = ({
           <Filter className="h-4 w-4" />
           Filter
           {activeFiltersCount > 0 && (
-            <Badge variant="default" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+            <Badge
+              variant="default"
+              className="ml-1 h-5 w-5 rounded-full p-0 text-xs"
+            >
               {activeFiltersCount}
             </Badge>
           )}
@@ -103,7 +110,8 @@ export const ActivityHistoryFilter = ({
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
                   ...prev,
-                  device_type: value === "all" ? undefined : (value as 'FEEDER' | 'UV'),
+                  device_type:
+                    value === "all" ? undefined : (value as "FEEDER" | "UV"),
                 }))
               }
             >
@@ -126,7 +134,10 @@ export const ActivityHistoryFilter = ({
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
                   ...prev,
-                  trigger_source: value === "all" ? undefined : (value as 'SCHEDULE' | 'MANUAL'),
+                  trigger_source:
+                    value === "all"
+                      ? undefined
+                      : (value as "SCHEDULE" | "MANUAL"),
                 }))
               }
             >
@@ -149,7 +160,10 @@ export const ActivityHistoryFilter = ({
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
                   ...prev,
-                  status: value === "all" ? undefined : (value as ActivityFilters['status']),
+                  status:
+                    value === "all"
+                      ? undefined
+                      : (value as ActivityFilters["status"]),
                 }))
               }
             >
@@ -170,10 +184,13 @@ export const ActivityHistoryFilter = ({
           {/* Date Range Filter */}
           <div className="space-y-3">
             <Label>Rentang Tanggal</Label>
-            
+
             {/* Date From */}
             <div className="space-y-2">
-              <Label htmlFor="date-from" className="text-sm text-muted-foreground">
+              <Label
+                htmlFor="date-from"
+                className="text-sm text-muted-foreground"
+              >
                 Dari Tanggal
               </Label>
               <Popover>
@@ -197,7 +214,7 @@ export const ActivityHistoryFilter = ({
                         className="ml-auto h-4 w-4 hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleClearDate('from');
+                          handleClearDate("from");
                         }}
                       />
                     )}
@@ -221,7 +238,10 @@ export const ActivityHistoryFilter = ({
 
             {/* Date To */}
             <div className="space-y-2">
-              <Label htmlFor="date-to" className="text-sm text-muted-foreground">
+              <Label
+                htmlFor="date-to"
+                className="text-sm text-muted-foreground"
+              >
                 Sampai Tanggal
               </Label>
               <Popover>
@@ -245,7 +265,7 @@ export const ActivityHistoryFilter = ({
                         className="ml-auto h-4 w-4 hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleClearDate('to');
+                          handleClearDate("to");
                         }}
                       />
                     )}
@@ -260,7 +280,9 @@ export const ActivityHistoryFilter = ({
                     }
                     initialFocus
                     disabled={(date) =>
-                      localFilters.date_from ? date < localFilters.date_from : false
+                      localFilters.date_from
+                        ? date < localFilters.date_from
+                        : false
                     }
                   />
                 </PopoverContent>
@@ -295,7 +317,11 @@ export const ActivityHistoryFilter = ({
         </div>
 
         <SheetFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={handleResetFilters} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={handleResetFilters}
+            className="flex-1"
+          >
             Reset Filter
           </Button>
           <Button onClick={handleApplyFilters} className="flex-1">

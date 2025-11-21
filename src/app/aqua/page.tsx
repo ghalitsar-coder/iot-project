@@ -30,7 +30,8 @@ const Index = () => {
   // TanStack Query hooks
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
   const { data: uvStatus } = useUVStatus();
-  const { data: historyData = [], isLoading: historyLoading } = useHistory(historyFilters);
+  const { data: historyData = [], isLoading: historyLoading } =
+    useHistory(historyFilters);
   const manualFeed = useManualFeed();
   const manualUV = useManualUV();
   const stopManualUV = useStopManualUV();

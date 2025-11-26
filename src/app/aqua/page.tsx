@@ -17,7 +17,7 @@ import {
   useManualUV,
   useStopManualUV,
   useUVStatus,
-  useHistory,
+  useHistoryWithPagination,
 } from "@/hooks/use-api";
 
 const Index = () => {
@@ -31,11 +31,14 @@ const Index = () => {
   // TanStack Query hooks
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
   const { data: uvStatus } = useUVStatus();
-  const { data: historyData = [], isLoading: historyLoading } =
-    useHistory(historyFilters);
+  const { data: historyResponse, isLoading: historyLoading } =
+    useHistoryWithPagination(historyFilters);
   const manualFeed = useManualFeed();
   const manualUV = useManualUV();
   const stopManualUV = useStopManualUV();
+
+  const historyData = historyResponse?.data ?? [];
+  const historyPagination = historyResponse?.pagination;
 
   const stockGram = dashboard?.stock.amount_gram ?? 0;
   const loading = dashboardLoading;
@@ -161,6 +164,7 @@ const Index = () => {
           activities={historyData}
           filters={historyFilters}
           onFiltersChange={setHistoryFilters}
+          pagination={historyPagination}
           isLoading={historyLoading}
         />
       </main>

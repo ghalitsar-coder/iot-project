@@ -1,18 +1,29 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 import { History, Fish, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type ActionHistory } from "@/lib/api";
+import { type ActionHistory, type PaginationMeta } from "@/lib/api";
 import {
   ActivityHistoryFilter,
   type ActivityFilters,
 } from "./ActivityHistoryFilter";
+import { Fragment } from "react";
 
 interface ActivityHistoryProps {
   activities: ActionHistory[];
   filters: ActivityFilters;
   onFiltersChange: (filters: ActivityFilters) => void;
+  pagination?: PaginationMeta;
   isLoading?: boolean;
 }
 
@@ -20,6 +31,7 @@ export const ActivityHistory = ({
   activities,
   filters,
   onFiltersChange,
+  pagination,
   isLoading = false,
 }: ActivityHistoryProps) => {
   const getStatusColor = (status: string) => {
@@ -155,6 +167,94 @@ export const ActivityHistory = ({
           )}
         </div>
       </ScrollArea>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.total_pages > 1 && (
+        <div className="p-4 border-t border-border/50">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Halaman {pagination.page} dari {pagination.total_pages} • Total{" "}
+              {pagination.total} data
+            </p>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => {
+                      if (pagination.page > 1) {
+                        onFiltersChange({
+                          ...filters,
+                          page: pagination.page - 1,
+                        });
+                      }
+                    }}
+                    className={cn(
+                      pagination.page === 1 && "pointer-events-none opacity-50"
+                    )}
+                  />
+                </PaginationItem>
+
+                {/* Page Numbers */}
+                {Array.from({ length: pagination.total_pages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    return (
+                      page === 1 ||
+                      page === pagination.total_pages ||
+                      Math.abs(page - pagination.page) <= 1
+                    );
+                  })
+                  .map((page, idx, arr) => {
+                    // Add ellipsis if there's a gap
+                    const prevPage = arr[idx - 1];
+                    const showEllipsis = prevPage && page - prevPage > 1;
+
+                    return (
+                      <Fragment key={page}>
+                        {showEllipsis && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink
+                            onClick={() =>
+                              onFiltersChange({
+                                ...filters,
+                                page,
+                              })
+                            }
+                            isActive={page === pagination.page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </Fragment>
+                    );
+                  })}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => {
+                      if (pagination.page < pagination.total_pages) {
+                        onFiltersChange({
+                          ...filters,
+                          page: pagination.page + 1,
+                        });
+                      }
+                    }}
+                    className={cn(
+                      pagination.page === pagination.total_pages &&
+                        "pointer-events-none opacity-50"
+                    )}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

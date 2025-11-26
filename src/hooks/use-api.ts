@@ -264,3 +264,20 @@ export function useHistory(filters?: {
     select: (response) => response.data, // Extract data from paginated response
   });
 }
+
+// History with full pagination metadata
+export function useHistoryWithPagination(filters?: {
+  device_type?: "FEEDER" | "UV";
+  trigger_source?: "SCHEDULE" | "MANUAL";
+  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
+  date_from?: Date;
+  date_to?: Date;
+  page?: number;
+  page_size?: number;
+}) {
+  return useQuery({
+    queryKey: queryKeys.history(filters),
+    queryFn: () => historyApi.getHistory(filters),
+    // Return full response including pagination metadata
+  });
+}

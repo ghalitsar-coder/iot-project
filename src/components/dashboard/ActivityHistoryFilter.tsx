@@ -37,7 +37,8 @@ export interface ActivityFilters {
   status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
   date_from?: Date;
   date_to?: Date;
-  limit?: number;
+  page?: number;
+  page_size?: number;
 }
 
 interface ActivityHistoryFilterProps {
@@ -60,7 +61,7 @@ export const ActivityHistoryFilter = ({
   };
 
   const handleResetFilters = () => {
-    const resetFilters: ActivityFilters = { limit: 50 };
+    const resetFilters: ActivityFilters = { page: 1, page_size: 50 };
     setLocalFilters(resetFilters);
     onFiltersChange(resetFilters);
   };
@@ -290,19 +291,19 @@ export const ActivityHistoryFilter = ({
             </div>
           </div>
 
-          {/* Limit Filter */}
+          {/* Page Size Filter */}
           <div className="space-y-2">
-            <Label htmlFor="limit">Jumlah Data Maksimal</Label>
+            <Label htmlFor="page-size">Jumlah Data Per Halaman</Label>
             <Select
-              value={String(localFilters.limit || 50)}
+              value={String(localFilters.page_size || 50)}
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
                   ...prev,
-                  limit: parseInt(value),
+                  page_size: parseInt(value),
                 }))
               }
             >
-              <SelectTrigger id="limit">
+              <SelectTrigger id="page-size">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

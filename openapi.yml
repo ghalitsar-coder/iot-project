@@ -80,17 +80,38 @@ paths:
       tags:
         - Feeder
       summary: Get all feeder schedules
-      description: Mengambil semua jadwal pakan yang telah dikonfigurasi
+      description: Mengambil semua jadwal pakan yang telah dikonfigurasi dengan pagination
       operationId: getFeederSchedules
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page (max 100)
       responses:
         '200':
-          description: List jadwal pakan
+          description: List jadwal pakan dengan pagination
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PakanSchedule'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PakanSchedule'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
     post:
       tags:
         - Feeder
@@ -116,7 +137,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PakanSchedule'
         '400':
-          description: Bad request (misal: sudah ada 5 jadwal di hari tersebut)
+          description: Bad request (misal sudah ada 5 jadwal di hari tersebut)
           content:
             application/json:
               schema:
@@ -189,8 +210,23 @@ paths:
       summary: Trigger manual feed
       description: |
         Memicu pemberian pakan secara manual. 
-        Sistem akan mensimulasikan proses feeding (5 detik) dan mengurangi stock.
+        Sistem akan langsung mengurangi stock tanpa delay.
+        User dapat menentukan jumlah pakan dalam gram (default 10 gram jika tidak diisi).
       operationId: manualFeed
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount_gram:
+                  type: integer
+                  minimum: 1
+                  description: Jumlah pakan dalam gram (kelipatan 10 gram per dosis)
+                  example: 15
+            example:
+              amount_gram: 15
       responses:
         '200':
           description: Command berhasil dikirim
@@ -205,11 +241,15 @@ paths:
                   action_id:
                     type: integer
                     example: 26
+                  amount_gram:
+                    type: integer
+                    example: 15
                   last_feed:
                     $ref: '#/components/schemas/LastFeedInfo'
               example:
                 message: "Feeding command sent"
                 action_id: 26
+                amount_gram: 15
                 last_feed:
                   day: "Wednesday"
                   time: "08:00"
@@ -243,17 +283,38 @@ paths:
       tags:
         - UV
       summary: Get all UV schedules
-      description: Mengambil semua jadwal UV yang telah dikonfigurasi
+      description: Mengambil semua jadwal UV yang telah dikonfigurasi dengan pagination
       operationId: getUVSchedules
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page (max 100)
       responses:
         '200':
-          description: List jadwal UV
+          description: List jadwal UV dengan pagination
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UVSchedule'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UVSchedule'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
     post:
       tags:
         - UV
@@ -433,7 +494,7 @@ paths:
       tags:
         - History
       summary: Get action history
-      description: Mengambil history aktivitas dengan optional filtering
+      description: Mengambil history aktivitas dengan optional filtering dan pagination
       operationId: getHistory
       parameters:
         - name: device_type
@@ -452,25 +513,37 @@ paths:
           in: query
           schema:
             type: string
-            enum: [PENDING, RUNNING, SUCCESS, FAILED, OVERRIDDEN]
+            enum: [PENDING, RUNNING, SUCCESS, FAILED, STOPPED]
           description: Filter by status
-        - name: limit
+        - name: page
           in: query
           schema:
             type: integer
             minimum: 1
-            maximum: 1000
-            default: 100
-          description: Limit jumlah hasil (max 1000)
+            default: 1
+          description: Page number
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+          description: Number of items per page (max 200)
       responses:
         '200':
-          description: List history
+          description: List history dengan pagination
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActionHistory'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionHistory'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
 
   /stock:
     get:
@@ -822,4 +895,24 @@ components:
         error:
           type: string
           example: "Error message here"
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+          example: 1
+        page_size:
+          type: integer
+          description: Number of items per page
+          example: 20
+        total:
+          type: integer
+          description: Total number of records
+          example: 156
+        total_pages:
+          type: integer
+          description: Total number of pages
+          example: 8
 

@@ -49,6 +49,18 @@ export interface ActionHistory {
   updated_at: string;
 }
 
+export interface PaginationMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
 export interface Stock {
   id: number;
   amount_gram: number;
@@ -161,10 +173,25 @@ export const dashboardApi = {
 
 export const feederApi = {
   /**
-   * Get all feeder schedules
+   * Get all feeder schedules with pagination
    */
-  getSchedules: (): Promise<PakanSchedule[]> => {
-    return apiFetch<PakanSchedule[]>('/feeder/schedules');
+  getSchedules: (params?: {
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedResponse<PakanSchedule>> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.page_size) {
+      queryParams.append('page_size', params.page_size.toString());
+    }
+    
+    const query = queryParams.toString();
+    const endpoint = query ? `/feeder/schedules?${query}` : '/feeder/schedules';
+    
+    return apiFetch<PaginatedResponse<PakanSchedule>>(endpoint);
   },
 
   /**
@@ -226,10 +253,25 @@ export const feederApi = {
 
 export const uvApi = {
   /**
-   * Get all UV schedules
+   * Get all UV schedules with pagination
    */
-  getSchedules: (): Promise<UVSchedule[]> => {
-    return apiFetch<UVSchedule[]>('/uv/schedules');
+  getSchedules: (params?: {
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedResponse<UVSchedule>> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.page_size) {
+      queryParams.append('page_size', params.page_size.toString());
+    }
+    
+    const query = queryParams.toString();
+    const endpoint = query ? `/uv/schedules?${query}` : '/uv/schedules';
+    
+    return apiFetch<PaginatedResponse<UVSchedule>>(endpoint);
   },
 
   /**
@@ -313,8 +355,9 @@ export const historyApi = {
     status?: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN';
     date_from?: Date;
     date_to?: Date;
-    limit?: number;
-  }): Promise<ActionHistory[]> => {
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedResponse<ActionHistory>> => {
     const queryParams = new URLSearchParams();
     
     if (params?.device_type) {
@@ -332,14 +375,17 @@ export const historyApi = {
     if (params?.date_to) {
       queryParams.append('date_to', params.date_to.toISOString());
     }
-    if (params?.limit) {
-      queryParams.append('limit', params.limit.toString());
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.page_size) {
+      queryParams.append('page_size', params.page_size.toString());
     }
 
     const query = queryParams.toString();
     const endpoint = query ? `/history?${query}` : '/history';
     
-    return apiFetch<ActionHistory[]>(endpoint);
+    return apiFetch<PaginatedResponse<ActionHistory>>(endpoint);
   },
 };
 

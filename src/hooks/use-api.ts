@@ -38,6 +38,7 @@ export function useFeederSchedules() {
   return useQuery({
     queryKey: queryKeys.feederSchedules,
     queryFn: () => feederApi.getSchedules(),
+    select: (response) => response.data, // Extract data from paginated response
   });
 }
 
@@ -116,6 +117,7 @@ export function useUVSchedules() {
   return useQuery({
     queryKey: queryKeys.uvSchedules,
     queryFn: () => uvApi.getSchedules(),
+    select: (response) => response.data, // Extract data from paginated response
   });
 }
 
@@ -253,10 +255,12 @@ export function useHistory(filters?: {
   status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
   date_from?: Date;
   date_to?: Date;
-  limit?: number;
+  page?: number;
+  page_size?: number;
 }) {
   return useQuery({
     queryKey: queryKeys.history(filters),
     queryFn: () => historyApi.getHistory(filters),
+    select: (response) => response.data, // Extract data from paginated response
   });
 }

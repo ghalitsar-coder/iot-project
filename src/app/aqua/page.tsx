@@ -24,7 +24,8 @@ const Index = () => {
   const [isUVActive, setIsUVActive] = useState(false);
   const [uvRemainingMinutes, setUvRemainingMinutes] = useState<number>();
   const [historyFilters, setHistoryFilters] = useState<ActivityFilters>({
-    limit: 50,
+    page: 1,
+    page_size: 50,
   });
 
   // TanStack Query hooks

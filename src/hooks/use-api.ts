@@ -29,7 +29,6 @@ export function useDashboard() {
   return useQuery({
     queryKey: queryKeys.dashboard,
     queryFn: () => dashboardApi.getDashboard(),
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
 }
 
@@ -97,7 +96,6 @@ export function useManualFeed() {
     mutationFn: () => feederApi.manualFeed(),
     onSuccess: () => {
       // Invalidate related queries to trigger immediate refetch
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.stock });
       queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
       toast.success("Pemberian Pakan Berhasil", {
@@ -188,7 +186,6 @@ export function useManualUV() {
     mutationFn: (durationMinutes: number) => uvApi.manualUV(durationMinutes),
     onSuccess: () => {
       // Invalidate related queries to trigger immediate refetch
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.uvStatus });
       queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
       toast.success("UV Sterilizer Diaktifkan", {
@@ -210,7 +207,6 @@ export function useStopManualUV() {
     mutationFn: () => uvApi.stopManualUV(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.uvStatus });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       queryClient.invalidateQueries({ queryKey: ["history"] }); // Invalidate all history queries
       toast.success("UV Manual Dihentikan", {
         description: "Sinar UV telah dimatikan",
@@ -229,6 +225,7 @@ export function useStock() {
   return useQuery({
     queryKey: queryKeys.stock,
     queryFn: () => stockApi.getStock(),
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time stock updates
   });
 }
 
@@ -239,7 +236,6 @@ export function useUpdateStock() {
     mutationFn: (amountGram: number) => stockApi.updateStock(amountGram),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.stock });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
       toast.success("Stock Diupdate");
     },
     onError: () => {

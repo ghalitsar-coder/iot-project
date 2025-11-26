@@ -87,7 +87,6 @@ export interface DashboardResponse {
   };
   uv: UVStatus;
   feeder: DeviceStatus;
-  history: ActionHistory[];
 }
 
 export interface LastFeedInfo {

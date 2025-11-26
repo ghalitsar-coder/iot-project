@@ -12,7 +12,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Waves } from "lucide-react";
 import { toast } from "sonner";
 import {
-  useDashboard,
+  useStock,
   useManualFeed,
   useManualUV,
   useStopManualUV,
@@ -31,7 +31,7 @@ const Index = () => {
   });
 
   // TanStack Query hooks
-  const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
+  const { data: stock, isLoading: stockLoading } = useStock();
   const { data: uvStatus } = useUVStatus();
   const { data: uvSchedules = [] } = useUVSchedules();
   const { data: historyResponse, isLoading: historyLoading } =
@@ -43,8 +43,8 @@ const Index = () => {
   const historyData = historyResponse?.data ?? [];
   const historyPagination = historyResponse?.pagination;
 
-  const stockGram = dashboard?.stock.amount_gram ?? 0;
-  const loading = dashboardLoading;
+  const stockGram = stock?.amount_gram ?? 0;
+  const loading = stockLoading;
 
   // Update UV state when status changes
   useEffect(() => {

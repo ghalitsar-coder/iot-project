@@ -43,7 +43,7 @@ export interface ActionHistory {
   trigger_source: 'SCHEDULE' | 'MANUAL';
   start_time: string;
   end_time: string | null;
-  status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN';
+  status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN' | 'STOPPED';
   value: number;
   created_at: string;
   updated_at: string;
@@ -352,7 +352,7 @@ export const historyApi = {
   getHistory: (params?: {
     device_type?: 'FEEDER' | 'UV';
     trigger_source?: 'SCHEDULE' | 'MANUAL';
-    status?: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN';
+    status?: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED' | 'OVERRIDDEN' | 'STOPPED';
     date_from?: Date;
     date_to?: Date;
     page?: number;

@@ -42,6 +42,12 @@ export const ActivityHistory = ({
         return "bg-destructive/10 text-destructive border-destructive/20";
       case "RUNNING":
         return "bg-primary/10 text-primary border-primary/20";
+      case "STOPPED":
+        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
+      case "PENDING":
+        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+      case "OVERRIDDEN":
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -160,7 +166,15 @@ export const ActivityHistory = ({
                     ? "Berhasil"
                     : activity.status === "FAILED"
                     ? "Gagal"
-                    : "Berjalan"}
+                    : activity.status === "RUNNING"
+                    ? "Berjalan"
+                    : activity.status === "STOPPED"
+                    ? "Dihentikan"
+                    : activity.status === "PENDING"
+                    ? "Menunggu"
+                    : activity.status === "OVERRIDDEN"
+                    ? "Ditimpa"
+                    : activity.status}
                 </Badge>
               </div>
             ))

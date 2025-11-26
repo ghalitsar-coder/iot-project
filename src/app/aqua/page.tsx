@@ -18,7 +18,9 @@ import {
   useStopManualUV,
   useUVStatus,
   useHistoryWithPagination,
+  useUVSchedules,
 } from "@/hooks/use-api";
+import { convertDayToIndonesian, type UVSchedule } from "@/lib/api";
 
 const Index = () => {
   const [isUVActive, setIsUVActive] = useState(false);
@@ -31,6 +33,7 @@ const Index = () => {
   // TanStack Query hooks
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard();
   const { data: uvStatus } = useUVStatus();
+  const { data: uvSchedules = [] } = useUVSchedules();
   const { data: historyResponse, isLoading: historyLoading } =
     useHistoryWithPagination(historyFilters);
   const manualFeed = useManualFeed();
@@ -86,6 +89,57 @@ const Index = () => {
     (a) => a.device_type === "FEEDER" && a.status === "SUCCESS"
   );
 
+  // Calculate next UV schedule
+  const getNextUVSchedule = (): string => {
+    const activeSchedules = uvSchedules.filter((s) => s.is_active);
+    if (activeSchedules.length === 0) return "Tidak ada jadwal";
+
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ...
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
+
+    // Map day names to day numbers
+    const dayMap: Record<string, number> = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    };
+
+    // Find the next upcoming schedule
+    let nextSchedule: UVSchedule | null = null;
+    let minDiff = Number.MAX_SAFE_INTEGER;
+
+    for (const schedule of activeSchedules) {
+      const scheduleDay = dayMap[schedule.day_name];
+      const [hours, minutes] = schedule.start_time.split(":").map(Number);
+      const scheduleTime = hours * 60 + minutes;
+
+      // Calculate difference in minutes
+      let dayDiff = scheduleDay - currentDay;
+      if (dayDiff < 0) dayDiff += 7; // Next week
+      if (dayDiff === 0 && scheduleTime < currentTime) dayDiff = 7; // Today but already passed
+
+      const totalDiff = dayDiff * 24 * 60 + (scheduleTime - currentTime);
+
+      if (totalDiff > 0 && totalDiff < minDiff) {
+        minDiff = totalDiff;
+        nextSchedule = schedule;
+      }
+    }
+
+    if (!nextSchedule) return "Tidak ada jadwal";
+
+    return `${convertDayToIndonesian(nextSchedule.day_name)}, ${
+      nextSchedule.start_time
+    }`;
+  };
+
+  const nextUVSchedule = getNextUVSchedule();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -137,7 +191,7 @@ const Index = () => {
             isActive={isUVActive}
             remainingMinutes={uvRemainingMinutes}
             mode={isUVActive ? "MANUAL" : "OFF"}
-            nextSchedule="Senin, 20:00"
+            nextSchedule={nextUVSchedule}
           />
         </div>
 

@@ -34,7 +34,13 @@ import { cn } from "@/lib/utils";
 export interface ActivityFilters {
   device_type?: "FEEDER" | "UV";
   trigger_source?: "SCHEDULE" | "MANUAL";
-  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
+  status?:
+    | "PENDING"
+    | "RUNNING"
+    | "SUCCESS"
+    | "FAILED"
+    | "OVERRIDDEN"
+    | "STOPPED";
   date_from?: Date;
   date_to?: Date;
   page?: number;
@@ -176,6 +182,7 @@ export const ActivityHistoryFilter = ({
                 <SelectItem value="SUCCESS">✅ Berhasil</SelectItem>
                 <SelectItem value="FAILED">❌ Gagal</SelectItem>
                 <SelectItem value="RUNNING">⏳ Berjalan</SelectItem>
+                <SelectItem value="STOPPED">🛑 Dihentikan</SelectItem>
                 <SelectItem value="PENDING">⏸️ Menunggu</SelectItem>
                 <SelectItem value="OVERRIDDEN">🔄 Ditimpa</SelectItem>
               </SelectContent>

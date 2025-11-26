@@ -252,7 +252,7 @@ export function useUpdateStock() {
 export function useHistory(filters?: {
   device_type?: "FEEDER" | "UV";
   trigger_source?: "SCHEDULE" | "MANUAL";
-  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
+  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN" | "STOPPED";
   date_from?: Date;
   date_to?: Date;
   page?: number;
@@ -269,7 +269,7 @@ export function useHistory(filters?: {
 export function useHistoryWithPagination(filters?: {
   device_type?: "FEEDER" | "UV";
   trigger_source?: "SCHEDULE" | "MANUAL";
-  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN";
+  status?: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "OVERRIDDEN" | "STOPPED";
   date_from?: Date;
   date_to?: Date;
   page?: number;

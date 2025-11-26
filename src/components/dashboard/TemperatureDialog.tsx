@@ -117,7 +117,10 @@ export const TemperatureDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="!max-w-[90vw] w-[60vw] max-h-[95vh] overflow-y-auto p-6 sm:!max-w-[90vw]"
+        // style={{ maxWidth: "90vw", width: "90vw" }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Thermometer className="h-5 w-5 text-cyan-500" />
@@ -247,15 +250,15 @@ export const TemperatureDialog = ({
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className="h-[400px] w-full" />
               ) : chartData.length === 0 ? (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                   Belum ada data tersedia
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-[300px] w-full"
+                  className="h-[400px] w-full"
                 >
                   <AreaChart
                     data={chartData}
@@ -350,15 +353,15 @@ export const TemperatureDialog = ({
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <Skeleton className="h-[300px] w-full" />
+                <Skeleton className="h-[400px] w-full" />
               ) : chartData.length === 0 ? (
-                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                   Belum ada data tersedia
                 </div>
               ) : (
                 <ChartContainer
                   config={chartConfig}
-                  className="h-[300px] w-full"
+                  className="h-[400px] w-full"
                 >
                   <AreaChart
                     data={chartData}

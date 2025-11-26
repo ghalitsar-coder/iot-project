@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { StockCard } from "@/components/dashboard/StockCard";
 import { UVStatusCard } from "@/components/dashboard/UVStatusCard";
+import { TemperatureCard } from "@/components/dashboard/TemperatureCard";
 import { ActivityHistory } from "@/components/dashboard/ActivityHistory";
 import { type ActivityFilters } from "@/components/dashboard/ActivityHistoryFilter";
 import { FeedControl } from "@/components/controls/FeedControl";
@@ -185,7 +186,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 pb-12 space-y-8">
         {/* Status Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <StockCard stockGram={stockGram} />
           <UVStatusCard
             isActive={isUVActive}
@@ -193,6 +194,7 @@ const Index = () => {
             mode={isUVActive ? "MANUAL" : "OFF"}
             nextSchedule={nextUVSchedule}
           />
+          <TemperatureCard />
         </div>
 
         {/* Control Panel */}

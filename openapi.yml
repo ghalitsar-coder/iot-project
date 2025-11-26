@@ -21,9 +21,9 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:8080/api/v1
+  - url: https://iot-backend-cursor-production.up.railway.app/api/v1
     description: Local development server (default)
-  - url: https://api.aquarium.local/api/v1
+  - url: https://iot-backend-cursor-production.up.railway.app/api/v1
     description: Production server
 
 tags:
@@ -37,6 +37,8 @@ tags:
     description: History dan log aktivitas
   - name: Stock
     description: Manajemen stock pakan
+  - name: Sensors
+    description: Sensor monitoring (temperature dan humidity)
   - name: Demo
     description: Endpoint untuk demo mode
 
@@ -46,7 +48,10 @@ paths:
       tags:
         - Dashboard
       summary: Get dashboard data
-      description: Mengambil data lengkap dashboard termasuk stock, status UV, status feeder, dan history terbaru
+      description: |
+        Mengambil data lengkap dashboard termasuk stock, status UV, dan status feeder.
+        
+        **Note**: Untuk mengambil history, gunakan endpoint `/history` yang sudah tersedia dengan support pagination dan filtering.
       operationId: getDashboard
       responses:
         '200':
@@ -66,14 +71,6 @@ paths:
                 feeder:
                   status: "IDLE"
                   last_updated: "2025-11-19T09:26:00Z"
-                history:
-                  - id: 1
-                    device_type: "FEEDER"
-                    trigger_source: "MANUAL"
-                    start_time: "2025-11-19T09:26:00Z"
-                    end_time: "2025-11-19T09:26:05Z"
-                    status: "SUCCESS"
-                    value: 10
 
   /feeder/schedules:
     get:
@@ -137,7 +134,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PakanSchedule'
         '400':
-          description: Bad request (misal sudah ada 5 jadwal di hari tersebut)
+          description: Bad request (misal: sudah ada 5 jadwal di hari tersebut)
           content:
             application/json:
               schema:
@@ -589,6 +586,87 @@ paths:
         '400':
           description: Bad request (amount negatif)
 
+  /sensors/current:
+    get:
+      tags:
+        - Sensors
+      summary: Get current sensor readings
+      description: Mengambil pembacaan sensor terbaru (temperature dan humidity)
+      operationId: getCurrentSensor
+      responses:
+        '200':
+          description: Current sensor data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorLog'
+              example:
+                id: 1
+                temperature: 27.5
+                humidity: 65.0
+                recorded_at: "2025-11-19T09:30:00Z"
+        '404':
+          description: No sensor data available
+
+  /sensors/history:
+    get:
+      tags:
+        - Sensors
+      summary: Get sensor history
+      description: Mengambil history pembacaan sensor dengan pagination dan filter time range
+      operationId: getSensorHistory
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+          description: Number of items per page (max 200)
+        - name: range
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 30d]
+          description: Time range filter (24h = last 24 hours, 7d = last 7 days, 30d = last 30 days)
+      responses:
+        '200':
+          description: Paginated sensor history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SensorLog'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+              example:
+                data:
+                  - id: 100
+                    temperature: 27.5
+                    humidity: 65.0
+                    recorded_at: "2025-11-19T09:30:00Z"
+                  - id: 99
+                    temperature: 27.3
+                    humidity: 64.5
+                    recorded_at: "2025-11-19T09:25:00Z"
+                pagination:
+                  page: 1
+                  page_size: 50
+                  total: 250
+                  total_pages: 5
+
   /demo/seed:
     post:
       tags:
@@ -774,11 +852,16 @@ components:
           example: "2025-11-19T09:26:05Z"
         status:
           type: string
-          enum: [PENDING, RUNNING, SUCCESS, FAILED, OVERRIDDEN]
+          enum: [PENDING, RUNNING, SUCCESS, FAILED, STOPPED]
           example: "SUCCESS"
         value:
           type: integer
-          description: Grams untuk feeder, seconds untuk UV
+          description: |
+            Nilai dalam satuan yang sesuai dengan device_type:
+            - **FEEDER**: Jumlah pakan dalam gram (e.g., 10, 15, 20)
+            - **UV**: Durasi dalam detik (e.g., 7200 untuk 2 jam, 28800 untuk 8 jam)
+            
+            Untuk UV schedule, value berisi remaining duration dari waktu schedule dimulai hingga selesai.
           example: 10
         created_at:
           type: string
@@ -801,6 +884,27 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    SensorLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        temperature:
+          type: number
+          format: float
+          description: Temperature in Celsius
+          example: 27.5
+        humidity:
+          type: number
+          format: float
+          description: Humidity percentage
+          example: 65.0
+        recorded_at:
+          type: string
+          format: date-time
+          example: "2025-11-19T09:30:00Z"
 
     DeviceStatus:
       type: object
@@ -883,11 +987,24 @@ components:
           $ref: '#/components/schemas/UVStatus'
         feeder:
           $ref: '#/components/schemas/DeviceStatus'
-        history:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActionHistory'
-          maxItems: 20
+        environment:
+          type: object
+          nullable: true
+          properties:
+            temperature:
+              type: number
+              format: float
+              description: Temperature in Celsius
+              example: 27.5
+            humidity:
+              type: number
+              format: float
+              description: Humidity percentage
+              example: 65.0
+            last_updated:
+              type: string
+              format: date-time
+              example: "2025-11-19T09:30:00Z"
 
     Error:
       type: object

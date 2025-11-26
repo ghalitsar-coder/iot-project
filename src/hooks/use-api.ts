@@ -5,6 +5,7 @@ import {
   uvApi,
   stockApi,
   historyApi,
+  sensorApi,
   type PakanScheduleInput,
   type UVScheduleInput,
 } from "@/lib/api";
@@ -22,6 +23,8 @@ export const queryKeys = {
     trigger_source?: string;
     status?: string;
   }) => ["history", filters] as const,
+  sensorCurrent: ["sensor", "current"] as const,
+  sensorHistory: (range?: '24h' | '7d' | '30d') => ["sensor", "history", range] as const,
 };
 
 // Dashboard
@@ -277,3 +280,30 @@ export function useHistoryWithPagination(filters?: {
     // Return full response including pagination metadata
   });
 }
+
+// ============================================================================
+// SENSOR HOOKS
+// ============================================================================
+
+/**
+ * Get current sensor data (temperature & humidity)
+ */
+export function useSensorData() {
+  return useQuery({
+    queryKey: queryKeys.sensorCurrent,
+    queryFn: () => sensorApi.getCurrentData(),
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time monitoring
+  });
+}
+
+/**
+ * Get sensor history for charts
+ */
+export function useSensorHistory(range?: '24h' | '7d' | '30d') {
+  return useQuery({
+    queryKey: queryKeys.sensorHistory(range),
+    queryFn: () => sensorApi.getHistory({ range, page_size: 200 }), // Get more data for charts
+    select: (response) => response.data, // Extract data array from paginated response
+  });
+}
+

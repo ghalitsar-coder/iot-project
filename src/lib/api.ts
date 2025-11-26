@@ -67,6 +67,13 @@ export interface Stock {
   updated_at: string;
 }
 
+export interface SensorLog {
+  id: number;
+  temperature: number;
+  humidity: number;
+  recorded_at: string;
+}
+
 export interface UVStatus {
   state: 'ON' | 'OFF';
   remaining: number;
@@ -87,6 +94,11 @@ export interface DashboardResponse {
   };
   uv: UVStatus;
   feeder: DeviceStatus;
+  environment?: {
+    temperature: number;
+    humidity: number;
+    last_updated: string;
+  } | null;
 }
 
 export interface LastFeedInfo {
@@ -408,6 +420,45 @@ export const stockApi = {
       method: 'PUT',
       body: JSON.stringify({ amount_gram: amountGram }),
     });
+  },
+};
+
+// ============================================================================
+// SENSOR API
+// ============================================================================
+
+export const sensorApi = {
+  /**
+   * Get current sensor data (temperature & humidity)
+   */
+  getCurrentData: (): Promise<SensorLog> => {
+    return apiFetch<SensorLog>('/sensors/current');
+  },
+
+  /**
+   * Get sensor history for charts with pagination
+   */
+  getHistory: (params?: {
+    range?: '24h' | '7d' | '30d';
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedResponse<SensorLog>> => {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.range) {
+      queryParams.append('range', params.range);
+    }
+    if (params?.page) {
+      queryParams.append('page', params.page.toString());
+    }
+    if (params?.page_size) {
+      queryParams.append('page_size', params.page_size.toString());
+    }
+    
+    const query = queryParams.toString();
+    const endpoint = query ? `/sensors/history?${query}` : '/sensors/history';
+    
+    return apiFetch<PaginatedResponse<SensorLog>>(endpoint);
   },
 };
 

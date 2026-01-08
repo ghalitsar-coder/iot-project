@@ -147,7 +147,9 @@ export const ActivityHistory = ({
                       day: "numeric",
                       hour: "2-digit",
                       minute: "2-digit",
-                    })}
+                      timeZone: "Asia/Jakarta", // Explicitly set WIB timezone
+                    })}{" "}
+                    <span className="text-xs opacity-70">WIB</span>
                   </p>
 
                   {activity.value && activity.value > 0 && (

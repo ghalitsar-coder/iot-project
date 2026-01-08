@@ -108,7 +108,7 @@ export const ActivityHistoryFilter = ({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6 py-6">
+        <div className="space-y-6 px-5 ">
           {/* Device Type Filter */}
           <div className="space-y-2">
             <Label htmlFor="device-type">Tipe Perangkat</Label>
@@ -122,7 +122,7 @@ export const ActivityHistoryFilter = ({
                 }))
               }
             >
-              <SelectTrigger id="device-type">
+              <SelectTrigger className="w-full"  id="device-type">
                 <SelectValue placeholder="Semua Perangkat" />
               </SelectTrigger>
               <SelectContent>
@@ -134,9 +134,10 @@ export const ActivityHistoryFilter = ({
           </div>
 
           {/* Trigger Source Filter */}
-          <div className="space-y-2">
+          <div className="space-y-2   ">
             <Label htmlFor="trigger-source">Sumber Pemicu</Label>
             <Select
+            
               value={localFilters.trigger_source || "all"}
               onValueChange={(value) =>
                 setLocalFilters((prev) => ({
@@ -148,10 +149,10 @@ export const ActivityHistoryFilter = ({
                 }))
               }
             >
-              <SelectTrigger id="trigger-source">
+              <SelectTrigger className="w-full" id="trigger-source !w-full ">
                 <SelectValue placeholder="Semua Sumber" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className=" " >
                 <SelectItem value="all">Semua Sumber</SelectItem>
                 <SelectItem value="SCHEDULE">📅 Terjadwal</SelectItem>
                 <SelectItem value="MANUAL">✋ Manual</SelectItem>
@@ -160,7 +161,7 @@ export const ActivityHistoryFilter = ({
           </div>
 
           {/* Status Filter */}
-          <div className="space-y-2">
+          <div className="space-y-2  ">
             <Label htmlFor="status">Status</Label>
             <Select
               value={localFilters.status || "all"}
@@ -174,7 +175,7 @@ export const ActivityHistoryFilter = ({
                 }))
               }
             >
-              <SelectTrigger id="status">
+              <SelectTrigger className="w-full"  id="status">
                 <SelectValue placeholder="Semua Status" />
               </SelectTrigger>
               <SelectContent>
@@ -194,7 +195,7 @@ export const ActivityHistoryFilter = ({
             <Label>Rentang Tanggal</Label>
 
             {/* Date From */}
-            <div className="space-y-2">
+            <div className="space-y-2  ">
               <Label
                 htmlFor="date-from"
                 className="text-sm text-muted-foreground"
@@ -245,7 +246,7 @@ export const ActivityHistoryFilter = ({
             </div>
 
             {/* Date To */}
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               <Label
                 htmlFor="date-to"
                 className="text-sm text-muted-foreground"
@@ -310,7 +311,7 @@ export const ActivityHistoryFilter = ({
                 }))
               }
             >
-              <SelectTrigger id="page-size">
+              <SelectTrigger className="w-full"  id="page-size">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
